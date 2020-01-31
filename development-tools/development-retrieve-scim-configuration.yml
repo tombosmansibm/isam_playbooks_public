@@ -1,0 +1,10 @@
+---
+- hosts: "all"
+  connection: local
+  gather_facts: yes
+  tasks:
+    - name: Export SCIM config
+      tags: ["infomap"]
+      import_role:
+       name: aac/get_scim_config
+

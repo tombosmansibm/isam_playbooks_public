@@ -1,0 +1,18 @@
+---
+# Disable runtime tracing
+#   description: disables all runtime tracing
+#   Example:
+#
+- hosts: "all"
+  connection: local
+  gather_facts: no
+  tasks:
+    - name: Disable all runtime tracing
+      tags: ["tracing"]
+      import_role:
+          name: set_runtime_tuning_parameter
+      when: tracing_runtime_sts is defined
+      vars:
+          runtime_tuning_parameters:
+            - runtime_tuning_parameter_option: "trace_specification"
+              runtime_tuning_parameter_value: ""

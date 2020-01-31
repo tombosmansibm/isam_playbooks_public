@@ -8,3 +8,10 @@ https://github.com/IBM-Security/ibmsecurity
 The ISAM Roles:
 https://github.com/IBM-Security/isam-ansible-roles
 
+
+You can copy the directory into your playbook directory .
+The plays will need to be adapted to your variables !
+
+---------------------------
+Tom Bosmans
+

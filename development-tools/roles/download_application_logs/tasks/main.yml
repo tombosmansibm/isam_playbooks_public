@@ -1,0 +1,46 @@
+# main task to export all application log files
+# hostname is necessary. It is possible to limit the export using the path variable. E.g append the following to your
+# ansible command: -e path=federation/runtime
+---
+- name: "Make sure the export_dir {{ logs_export_dir }}/downloads/{{ inventory_hostname }} exists"
+  become: "{{ logs_become | default(false) }}"
+  file:
+    path: "{{ logs_export_dir }}/downloads/{{ inventory_hostname }}"
+    state: directory
+    group: "{{ logs_group | default(omit) }}"
+    mode: "{{ logs_mode | default(omit) }}"
+
+- name: "Make sure all underlying directories exist {{ logs_export_dir }}/downloads/{{ inventory_hostname }}"
+  become: "{{ logs_become | default(false) }}"
+  file:
+    path: "{{ logs_export_dir }}/downloads/{{ inventory_hostname }}/{{ item.path }}"
+    state: directory
+    recurse: true
+    mode: "{{ logs_mode | default(omit) }}"
+    group: "{{ logs_group | default(omit) }}"
+  loop: "{{ paths }}"
+
+- name: Delete destination files
+  file:
+    state: absent
+    path: "{{ logs_export_dir }}/downloads/{{ inventory_hostname }}/{{ item.path  | default('') }}/{{ item.name }}"
+  loop: "{{ paths }}"
+
+- name: Get application log files
+  isam:
+    appliance: "{{ inventory_hostname }}"
+    adminProxyProtocol: "{{ adminProxyProtocol | default(omit) }}"
+    adminProxyHostname: "{{ adminProxyHostname | default(omit) }}"
+    adminProxyPort: "{{ adminProxyPort | default(omit) }}"
+    adminProxyApplianceShortName: "{{ adminProxyApplianceShortName | default(omit) }}"
+    omitAdminProxy: "{{ omitAdminProxy | default(omit) }}"
+    username:  "{{ username }}"
+    password:  "{{ password }}"
+    lmi_port:  "{{ port | default(omit) }}"
+    log:       "{{ log_level | default(omit) }}"
+    force:     "{{ force | default(omit) }}"
+    action: ibmsecurity.isam.application_logs.export_file
+    isamapi:
+      file_path: "{{ item.path }}/{{ item.name }}"
+      filename: "{{ logs_export_dir }}/downloads/{{ inventory_hostname }}/{{ item.path  | default('') }}/{{ item.name }}"
+  with_items: "{{ paths }}"

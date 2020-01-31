@@ -1,0 +1,16 @@
+---
+# enable scim application
+#
+- hosts: "all"
+  connection: local
+  gather_facts: no
+  tasks:
+   - name: Runtime Advanced Configuration
+     tags: ["runtime_scim"]
+     include_role:
+       name: set_advanced_tuning_parameter
+     vars:
+        advanced_tuning_parameters:
+          - advanced_tuning_parameter_key: "scim_demo_enabled"
+            advanced_tuning_parameter_value: true
+            advanced_tuning_parameter_comment: "Enable scim demo"

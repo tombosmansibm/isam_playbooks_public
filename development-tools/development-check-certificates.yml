@@ -1,0 +1,15 @@
+---
+# checks that the certificates are still valid.
+- hosts: "localhost"
+  connection: local
+  gather_facts: yes
+  tasks:
+    - name: Run shell openssl
+      tags: ["openssl"]
+      shell: "openssl pkcs12 -info -nodes -in {{ inventory_dir }}/{{ item.cert }} -nomacver -password pass:'{{ item.password }}'"
+      vars:
+          inventory_dir: "../files/certs"
+      when: rp_personal_certificates is defined
+      loop: "{{ rp_personal_certificates }}"
+
+

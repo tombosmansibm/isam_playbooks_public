@@ -1,0 +1,8 @@
+# set the default export_dir to playbook_dir
+logs_export_dir: "{{ playbook_dir }}"
+# use become to create directory structure
+logs_become: false
+# set group ownership for the created directories.  null to not change anything.
+logs_group: null
+# set mode, the default here defined is o=rwx,g=rx,o=  . may not be sufficient.
+logs_mode: '0750'

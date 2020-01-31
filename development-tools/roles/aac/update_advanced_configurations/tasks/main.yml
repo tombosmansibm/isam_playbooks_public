@@ -1,0 +1,14 @@
+- name: Update Advanced Configuration values
+  isam:
+    appliance: "{{ inventory_hostname }}"
+    username:  "{{ username }}"
+    password:  "{{ password }}"
+    lmi_port:  "{{ lmi_port }}"
+    log:       "{{ log_level }}"
+    force:     "{{ force }}"
+    action: ibmsecurity.isam.aac.advanced_configuration.update_all
+    isamapi:
+      values:       "{{ update_advanced_configuration_values }}"
+  notify:
+    - Commit Changes
+    - Restart AAC Runtime

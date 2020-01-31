@@ -1,0 +1,56 @@
+#
+# Mobile demo application enabling and disabling.  Set demo_enable_live_demos: true to enable; false to disable
+# TODO: delete /demo junction if demo_enable_live_demos: false
+- hosts: all
+  connection: local
+  no_log: false
+  tasks:
+     - name: Add demo junction to defined instances
+       include_role:
+         name: add_junction
+       vars:
+        add_junction_junction_point: '/demo'
+        add_junction_junction_type: 'ssl'
+        add_junction_reverseproxy_id: "{{ item.inst_name }}"
+        add_junction_server_hostname: '127.0.0.1'
+        add_junction_server_port: '443'
+        add_junction_remote_http_header: ["iv-user", "iv-groups", "iv-creds"]
+       loop: "{{ demo_instances }}"
+       loop_control:
+          label: "{{ item.inst_name | default('default') }} - /demo"
+       when: demo_enable_live_demos and demo_instances is defined
+
+     - name: Enable runtime parameters
+       import_role:
+           name: aac/update_advanced_configurations
+       vars        :
+           update_advanced_configuration_values:
+                - datatype: String
+                  sensitive: false
+                  validValues: []
+                  category: demo
+                  value: "lmiHostAndPort={{ inventory_hostname }}:{{ lmi_port | default('443')  }}, lmiAdminId={{ username | default('admin@local') }}, lmiAdminPwd={{ password }}, acHostAndPort=127.0.0.1:443, websealHostNameAndPort={{ demo_webseal_host_and_port }}"
+                  key: live.demos.settings
+                - datatype: Boolean
+                  sensitive: false
+                  validValues: []
+                  category: demo
+                  value: "{{ demo_enable_live_demos | string }}"
+                  key: live.demos.enabled
+                - sensitive  : false
+                  value      : 'true'
+                  key        : attributeCollection.enableGetAttributes
+                - sensitive  : false
+                  value      : 'true'
+                  key        : riskEngine.reportsEnabled
+
+     - name: Load signer certificates dynamically
+       tags: ["certs","load"]
+       include_role:
+         name: base/load_signer_certificates
+       vars:
+         ## variables defined in 'inventories/<env>/group_vars/all/certs.yml'
+         load_signer_certificates: "{{ load_signer_certificates_demo }}"
+      # ignore errors in this step, it means the cert is there already
+       ignore_errors: true
+       when: load_signer_certificates_demo is defined

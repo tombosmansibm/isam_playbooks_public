@@ -1,0 +1,73 @@
+
+---
+- name: Get authentication mechanisms
+  isam:
+    appliance: "{{ inventory_hostname }}"
+    adminProxyProtocol: "{{ adminProxyProtocol | default(omit) }}"
+    adminProxyHostname: "{{ adminProxyHostname | default(omit) }}"
+    adminProxyPort: "{{ adminProxyPort | default(omit) }}"
+    adminProxyApplianceShortName: "{{ adminProxyApplianceShortName | default(omit) }}"
+    omitAdminProxy: "{{ omitAdminProxy | default(omit) }}"
+    username:  "{{ username }}"
+    password:  "{{ password }}"
+    lmi_port:  "{{ port | default(omit) }}"
+    log:       "{{ log_level | default(omit) }}"
+    force:     "{{ force | default(omit) }}"
+    action: ibmsecurity.isam.aac.authentication.mechanisms.get_all
+    isamapi:
+  register: ret_obj
+
+- name    : Set variable get_authenticationpolicies for use by rest of playbook
+  set_fact:
+    get_authenticationpolicies: "{{ ret_obj.data | default([]) }}"
+    unique_code              : "{{ 10000 | random }}"
+
+- name: Make sure destination directory "{{ authentication_output_dir }}/{{ unique_code }}" exists
+  become: "{{ authentication_output_become | default(false) }}"
+  file  :
+     path   : "{{ authentication_output_dir }}/{{ unique_code }}"
+     state  : directory
+     mode   : "{{ authentication_output_export_mode }}"
+     group  : "{{ authentication_output_export_group }}"
+     recurse: true
+
+- name: Create a file with the output "{{ authentication_output_dir }}/{{ unique_code }}/authentication_mechanisms.yaml"
+  copy:
+    content: "{{ get_authenticationpolicies | to_nice_yaml }}"
+    dest: "{{ authentication_output_dir }}/{{ unique_code }}/authentication_mechanisms.yaml"
+
+- name: Export all custom mechanisms
+  isam:
+    appliance: "{{ inventory_hostname }}"
+    adminProxyProtocol: "{{ adminProxyProtocol | default(omit) }}"
+    adminProxyHostname: "{{ adminProxyHostname | default(omit) }}"
+    adminProxyPort: "{{ adminProxyPort | default(omit) }}"
+    adminProxyApplianceShortName: "{{ adminProxyApplianceShortName | default(omit) }}"
+    omitAdminProxy: "{{ omitAdminProxy | default(omit) }}"
+    username:  "{{ username }}"
+    password:  "{{ password }}"
+    lmi_port:  "{{ port | default(omit) }}"
+    log:       "{{ log_level | default(omit) }}"
+    force:     "{{ force | default(omit) }}"
+    action: ibmsecurity.isam.aac.authentication.mechanisms.get
+    isamapi:
+           name: "{{ item.name }}"
+  loop: "{{ get_authenticationpolicies }}"
+  loop_control:
+      label: "EXPORT : {{ item.name.split(' ') | join('_') }}"
+  when: get_authenticationpolicies is defined and item.predefined == false
+  register: get_policies
+
+- name: debug
+  debug:
+    msg: "{{ get_policies.results[0] }}"
+
+- name: Create files
+  copy:
+    content: "{{ item.data | to_nice_yaml }}"
+    dest: "{{ authentication_output_dir }}/{{ unique_code }}/{{ item.data.name.split(' ') | join('_') }}.yaml"
+  with_items: "{{ get_policies.results }}"
+  loop_control:
+    label: "EXPORTING ..."
+  when: get_policies.results is defined and item.data is defined and item.data.name is defined
+

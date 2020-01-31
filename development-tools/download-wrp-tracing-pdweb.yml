@@ -1,0 +1,30 @@
+---
+# Export
+#
+#   Example: ansible-playbook download-wrp-tracing-pdweb -i <inventory> --e '{"wrp_trace_instances": ["inst_name": "rp", "inst_name": "sp"]}'
+#    If you set the wrp_trace_instances like this; you are likely to need to limit the hosts this runs on using --limit "<hostname>"
+#
+#
+- hosts: "all"
+  connection: local
+  gather_facts: no
+  tasks:
+    - name: Download reverse proxy trace log - pdweb.debug and pdweb.wns.session
+      tags: ["trace"]
+      include_role:
+          name: web/export_tracingfile
+      vars:
+          logs_export_dir: "{{ export_dir | default(inventory_dir) }}"
+          logs_become: false
+          logs_group: "{{ ansible_group_for_administrators | default(omit) }}"
+          logs_mode: '0770'
+          tracing_instances:   
+            - inst_name: "{{ inst.inst_name }}"
+              tracing:
+               - component_id: "pdweb.debug" 
+               - component_id: "pdweb.wns.session"
+      loop        : "{{ wrp_trace_instances  | default( wrpvars_instances ) }}"
+      when        : wrpvars_instances is defined and inst is defined and inst.inst_name is defined
+      loop_control:
+        loop_var: inst
+        label   : "Downloading pdweb.debug/pdweb.wns.session on {{ inst.inst_name }}"

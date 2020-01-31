@@ -1,0 +1,11 @@
+paths:
+  - path: "access_control/runtime"
+    name: "messages.log"
+# set the default export_dir to inventory_dir
+logs_export_dir: "{{ inventory_dir }}"
+# use become to create directory structure
+logs_become: false
+# set group ownership for the created directories
+logs_group: null
+# set mode, default is o=rwx,g=rx,o=  . may not be sufficient.
+logs_mode: '0750'

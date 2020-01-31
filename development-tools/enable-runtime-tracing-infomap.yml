@@ -1,0 +1,16 @@
+---
+# Enable tracing specs to trace Infomap/Mapping rule issues
+#
+#   Example:
+#
+- hosts: "all"
+  connection: local
+  gather_facts: no
+  tasks:
+    - name: Enable tracing for Infomaps
+      tags: ["tracing"]
+      import_role:
+          name: set_runtime_tuning_parameter
+      when: tracing_runtime_infomap is defined
+      vars:
+          runtime_tuning_parameters: "{{ tracing_runtime_infomap }}"

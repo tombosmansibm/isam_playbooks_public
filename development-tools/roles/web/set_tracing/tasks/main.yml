@@ -1,0 +1,31 @@
+---
+# def set(isamAppliance, instance_id, component_id, level, flush_interval,
+#      rollover_size, max_rollover_files, compress, check_mode=False, force=False):
+- name: Set tracing
+  isam:
+    appliance: "{{ inventory_hostname }}"
+    adminProxyProtocol: "{{ adminProxyProtocol | default(omit) }}"
+    adminProxyHostname: "{{ adminProxyHostname | default(omit) }}"
+    adminProxyPort: "{{ adminProxyPort | default(omit) }}"
+    adminProxyApplianceShortName: "{{ adminProxyApplianceShortName | default(omit) }}"
+    omitAdminProxy: "{{ omitAdminProxy | default(omit) }}"
+    username:  "{{ username }}"
+    password:  "{{ password }}"
+    lmi_port:  "{{ port | default(omit) }}"
+    log:       "{{ log_level | default(omit) }}"
+    force:     "{{ force | default(omit) }}"
+    action: ibmsecurity.isam.web.reverse_proxy.trace.set
+    isamapi:
+      instance_id: "{{ theinstance.0.inst_name }}"
+      component_id: "{{ theinstance.1.component_id }}"
+      level: "{{ theinstance.1.level | default('9') }}"
+      flush_interval: "{{ theinstance.1.flush_interval | default('20') }}"
+      rollover_size: "{{ theinstance.1.rollover_size | default('2000000') }}"
+      max_rollover_files:  "{{ theinstance.1.max_rollover_files | default('') }}" 
+      compress: "{{ theinstance.1.compress | default('false') }}"
+  loop: "{{ query('subelements', tracing_instances, 'tracing') }}"
+  loop_control:
+    label: "Setting {{ theinstance.1.component_id | default('skipping') }} on {{ theinstance.0.inst_name | default('default') }}"
+    loop_var: theinstance
+  when: tracing_instances is defined
+   

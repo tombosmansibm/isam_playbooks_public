@@ -1,0 +1,22 @@
+# Example
+#
+#   This task sets pdweb.debug on the instance named Default  
+#
+# - hosts: all
+#   connection: local
+#   gather_facts: no
+#   tasks:
+#     - name: Enable pdweb.debug on reverse proxies
+#       tags: ["tracing"]
+#       import_role:
+#         name: web/set_tracing
+#       vars:
+#         tracing_instances:   
+#             - inst_name: "Default"
+#               tracing:
+#                - component_id: "pdweb.debug"  
+#                  level: "2"
+#                  flush_interval: "5"
+#                - component_id: "pdweb.wns.session"  
+#                  level: "9"
+#                  flush_interval: "5"

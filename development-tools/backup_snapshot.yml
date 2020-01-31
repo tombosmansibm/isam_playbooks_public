@@ -1,0 +1,29 @@
+# Snapshot create and download Backup
+
+- hosts: "all"
+  connection: local
+  gather_facts: True
+  tasks:
+    - name: Set Snapshot comment with current date time
+      set_fact: snapshotname="{{lookup('pipe','date +%Y-%m-%d-%H-%M-%S')}}"
+    - name: Create Appliance snapshot
+      tags: ["snapshot"]
+      import_role:
+          name: backup_snapshot
+      vars:
+        create_snapshot_Snapshotname: "{{snapshotname}}" 
+        create_snapshot_filename: "{{snapshotname}}"
+    - name: Move snapshot to Snapshots Folder
+      vars:
+        downloadfile: "{{snapshotname}}" 
+      command: mv "{{ downloadfile }}" /tmp 
+     
+        
+
+
+        
+    
+     
+    
+    
+               

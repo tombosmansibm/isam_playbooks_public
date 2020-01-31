@@ -1,0 +1,59 @@
+# main task to export trace files for configured traces
+#  #def export_file(isamAppliance, instance_id, component_id, file_id, filename, check_mode=False, force=False):
+ 
+---
+- name: Make sure the export_dir exists
+  become: "{{ logs_become | default(false) }}"
+  file:
+    path: "{{ logs_export_dir }}/downloads/{{ inventory_hostname }}"
+    state: directory
+    group: "{{ logs_group | default(omit) }}"
+    mode: "{{ logs_mode | default(omit) }}"
+
+- name: "Make sure all underlying directories exist {{ logs_export_dir }}/downloads/{{ inventory_hostname }}"
+  become: "{{ logs_become | default(false) }}"
+  file:
+    path: "{{ logs_export_dir }}/downloads/{{ inventory_hostname }}/{{ item.inst_name | default('default') }}"
+    state: directory
+    recurse: true
+    mode: "{{ logs_mode | default(omit) }}"
+    group: "{{ logs_group | default(omit) }}"
+  loop: "{{ tracing_instances }}"
+  loop_control:
+    label: "Creating {{ logs_export_dir }}/downloads/{{ inventory_hostname }}/{{ item.inst_name | default('default') }} ..."
+  when: tracing_instances is defined
+
+- name: Delete destination files
+  file:
+    state: absent
+    path: "{{ logs_export_dir }}/downloads/{{ inventory_hostname }}/{{ item.0.inst_name | default('default') }}/{{ item.1.component_id }}.log"
+  loop: "{{ query('subelements', tracing_instances, 'tracing', {'skip_missing': True}) }}"
+  when: tracing_instances is defined
+  loop_control:
+    label: "Deleting {{ item.1.component_id | default('empty') }}.log ..."
+
+- name: Export trace file
+  isam:
+    appliance: "{{ inventory_hostname }}"
+    adminProxyProtocol: "{{ adminProxyProtocol | default(omit) }}"
+    adminProxyHostname: "{{ adminProxyHostname | default(omit) }}"
+    adminProxyPort: "{{ adminProxyPort | default(omit) }}"
+    adminProxyApplianceShortName: "{{ adminProxyApplianceShortName | default(omit) }}"
+    omitAdminProxy: "{{ omitAdminProxy | default(omit) }}"
+    username:  "{{ username }}"
+    password:  "{{ password }}"
+    lmi_port:  "{{ port | default(omit) }}"
+    log:       "{{ log_level | default(omit) }}"
+    force:     "{{ force | default(omit) }}"
+    action: ibmsecurity.isam.web.reverse_proxy.trace.export_file
+    isamapi:
+      instance_id: "{{ theinstance[0].inst_name }}"
+      component_id: "{{ theinstance[1].component_id }}"
+      file_id: "{{ theinstance[1].component_id }}.log" 
+      filename: "{{ logs_export_dir }}/downloads/{{ inventory_hostname }}/{{ theinstance.0.inst_name | default('default') }}/{{ theinstance.1.component_id }}.log"
+  loop: "{{ query('subelements', tracing_instances, 'tracing') }}"
+  loop_control:
+    label: "Setting {{ theinstance[1].component_id | default('skipping') }} on {{ theinstance[0].inst_name | default('default') }}"
+    loop_var: theinstance
+  when: tracing_instances is defined and theinstance[1].component_id is defined
+  

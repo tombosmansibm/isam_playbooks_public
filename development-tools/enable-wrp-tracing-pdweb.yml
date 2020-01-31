@@ -1,0 +1,30 @@
+---
+# Enable reverse proxy tracing
+#
+##   Example: ansible-playbook download-wrp-tracing-pdweb -i <inventory> --e '{"wrp_trace_instances": ["inst_name": "rp", "inst_name": "sp"]}'
+##    If you set the wrp_trace_instances like this; you are likely to need to limit the hosts this runs on using --limit "<hostname>"
+#   If you do not supply the extra var; this will enable tracing on ALL the reverse proxies you defined (in wrpvars_instances).
+#
+- hosts: all
+  connection: local
+  gather_facts: no
+  tasks:
+    - name: Enable pdweb.debug and pdweb.wns.session on reverse proxies
+      tags: ["tracing"]
+      include_role:
+        name: web/set_tracing
+      vars:
+        tracing_instances:   
+            - inst_name: "{{ inst.inst_name }}"
+              tracing:
+               - component_id: "pdweb.debug"  
+                 level: "2"
+                 flush_interval: "5"
+               - component_id: "pdweb.wns.session"  
+                 level: "9"
+                 flush_interval: "5"
+      loop: "{{ wrp_trace_instances  | default( wrpvars_instances ) }}"
+      when: wrpvars_instances is defined and inst is defined and inst.inst_name is defined
+      loop_control:
+         loop_var: inst
+         label: "Setting pdweb.debug/pdweb.wns.session on {{ inst.inst_name }}"

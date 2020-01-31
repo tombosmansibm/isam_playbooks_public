@@ -1,0 +1,12 @@
+# Default variables
+# Export dir to export stuff to
+# assuming the playbooks are run from a subdirectory; they should end up in a structure under <yourplaybookdir>/files/
+export_dir: "{{ playbook_dir }}/../files/{{ inventory_dir | basename }}"
+# Ansible group that will own created directories.  Do not define to ignore on a windows machine
+#ansible_group_for_administrators: null
+# Group mode for the administrators on the created directories on the ansible host.  Do not define ; to ignore on a windows machine
+#ansible_group_mode: null
+# For exporting and creating directories on the ansible host; use "become"
+ansible_use_become: false
+# default mode.  Should probably set to something a bit more restrictive than this.
+ansible_group_mode: '0755'

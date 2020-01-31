@@ -1,0 +1,21 @@
+---
+# Export
+#
+#   Example:
+#
+- hosts: "all"
+  connection: local
+  gather_facts: no
+  tasks:
+    - name: Download runtime trace log
+      tags: ["trace"]
+      import_role:
+          name: download_application_logs
+      vars:
+          logs_export_dir: "{{ export_dir | default(inventory_dir) }}"
+          logs_become: true
+          logs_group: "{{ ansible_group_for_administrators | default(null) }}"
+          logs_mode: '0770'
+          paths:
+           - path: "access_control/runtime"
+             name: "trace.log"

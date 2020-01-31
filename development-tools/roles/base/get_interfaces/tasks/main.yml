@@ -1,0 +1,35 @@
+---
+- name: Get all interfaces
+  isam:
+      appliance                   : "{{ inventory_hostname }}"
+      adminProxyProtocol          : "{{ adminProxyProtocol | default(omit) }}"
+      adminProxyHostname          : "{{ adminProxyHostname | default(omit) }}"
+      adminProxyPort              : "{{ adminProxyPort | default(omit) }}"
+      adminProxyApplianceShortName: "{{ adminProxyApplianceShortName | default(omit) }}"
+      omitAdminProxy              : "{{ omitAdminProxy | default(omit) }}"
+      username                    : "{{ username }}"
+      password                    : "{{ password }}"
+      lmi_port                    : "{{ port | default(omit) }}"
+      log                         : "{{ log_level | default(omit) }}"
+      force                       : "{{ force | default(omit) }}"
+      action                      : ibmsecurity.isam.base.network.interfaces.get_all
+      isamapi                     :
+  register: ret_obj
+
+#"{{ wrpvars_ip_addresses | json_query( \"[?inst_name=='idpautologon\" + appliance_number + \"'].ip_address\" ) | first }}"
+#msg      : "{{ ret_obj.data.interfaces | json_query(\"[?label=='1.3'].ipv4.addresses\") | json_query(\"[?address=='192.168.150.222'].uuid\") }}"
+#msg      : "{{ ret_obj.data.interfaces | json_query(\"[?label=='1.3'].ipv4.addresses\") | flatten | json_query(\"[?address=='192.168.150.222'].uuid\") | first }}"
+#msg      : "{{ ret_obj.data.interfaces | json_query(\"label[*].ipv4.addresses\") | flatten | json_query(\"[?address=='192.168.150.222'].uuid\") | first }}"
+# msg      : "{{ ret_obj.data.interfaces | json_query(\"['*'].ipv4.addresses\") | flatten | json_query(\"contains(@, '192.168.150.222')\").uuid  }}"
+#- name : Debug output of lookup interface
+#  debug:
+#    msg      : "{{ item.table_ipv4 }} uuid: {{ ret_obj.data | json_query(\"interfaces[*].ipv4.addresses[?address=='\" + item.table_ipv4 + \"']\") | flatten | first | json_query(\"uuid\") }}"
+#    verbosity: 0
+#  with_items:  "{{ static_routes }}"
+#  loop_control:
+#    label: ""
+#  when: static_routes is defined and item.table_ipv4 is defined and ret_obj is defined and item.label is defined
+- name : All interface configuration
+  debug:
+    msg      : "{{ ret_obj.data.interfaces }}"
+    verbosity: 0

@@ -1,0 +1,20 @@
+---
+#TODO: This gives the configuration, not the status.
+- hosts: "all"
+  connection: local
+  gather_facts: no
+  tasks:
+    - name: Get network configuration
+      tags: ["ipv4"]
+      import_role:
+       name: base/get_interfaces
+
+
+
+
+
+
+
+
+
+
