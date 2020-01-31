@@ -11,9 +11,6 @@
       tags: ["snapshot"]
       import_role:
           name: backup_snapshot
-      vars:
-        create_snapshot_snapshotname: "{{snapshotname}}"
-        create_snapshot_filename: "{{snapshotname}}"
       when: snapshotname is defined
 
     - name: Move snapshot to Snapshots Folder
